@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Remix Licensing Hub</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 20px;
+        text-align: center;
+      }
+      input, select, button {
+        margin: 10px;
+        padding: 10px;
+        width: 80%;
+        max-width: 400px;
+      }
+      h1 {
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AI Remix Licensing Hub</h1>
+
+    <input type="file" id="uploadContent" /><br>
+
+    <input type="text" id="title" placeholder="Title of your work" /><br>
+
+    <input type="text" id="description" placeholder="Short description of the work" /><br>
+
+    <select id="license">
+      <option value="personal">Personal Use Only</option>
+      <option value="remix">Free to Remix (credit required)</option>
+      <option value="commercial">Commercial License</option>
+    </select><br>
+
+    <button onclick="mintContent()">Mint on Camp</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/@camp-network/origin-sdk@latest/dist/camp-sdk.min.js"></script>
+
+    <script>
+      async function mintContent() {
+        if (!window.ethereum) {
+          alert("Please install MetaMask or Rabby to connect your wallet.");
+          return;
+        }
+
+        const fileInput = document.getElementById('uploadContent').files[0];
+        const license = document.getElementById('license').value;
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+
+        if (!fileInput || !title || !description) {
+          alert("Please upload a file and fill in all fields.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const content = e.target.result;
+
+          try {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+            const camp = new Camp.Origin(window.ethereum, {
+              rpcUrl: "https://rpc.basecamp.t.raas.gelato.cloud",
+              chainId: "123420001114"
+            });
+
+            await camp.mint({
+              data: content,
+              license: license,
+              title: title,
+              description: description
+            });
+
+            alert("🎉 Success! Your content has been minted on Camp Network.");
+          } catch (err) {
+            console.error(err);
+            alert("❌ Minting failed: " + err.message);
+          }
+        };
+
+        reader.readAsDataURL(fileInput);
+      }
+    </script>
+  </body>
+</html>
